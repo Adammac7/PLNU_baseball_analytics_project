@@ -1,0 +1,77 @@
+## PLNU Baseball Analytics Project
+
+This repository contains simple visualization and player stat aggregation scripts for baseball pitch and plate-data analysis. The code is intended for exploratory use and local plotting of pitch locations and player statistics.
+
+Files of interest
+- `barchart.py` — Core script containing classes for `Pitch`, `Batter`, and `Pitcher`, plus helper functions to filter pitch data and create visualizations (bar charts and strike zone plots). The script loads a master CSV, builds `Batter` objects from the rows, and can create HTML visualizations (`barchart.html`, `strikezone.html`).
+- `strikezone.py` — A refactored/alternate implementation of strike-zone plotting utilities (uses Plotly). Exposes `get_zone_number`, `create_strike_zone_plot`, and `create_strike_zone_plot_from_pitches` which operate on pandas DataFrames and `Batter` objects.
+
+Overview
+--------
+The code reads pitch-by-pitch data (CSV) and builds small object models representing pitchers, batters, and individual pitches. The primary purpose is to compute per-zone batter metrics (AVG, SLG, average exit velocity, whiff rate) and to render strike-zone visualizations showing pitch locations and per-zone stats.
+
+Key classes and functions
+- `Pitch` (in `barchart.py`): stores data for a single pitch including plate location, pitch type, speed, spin, launch angle, and outcome.
+- `Batter` (in `barchart.py`): accumulates pitches faced, computes statistics (AVG, OBP, SLG, OPS, wOBA placeholder), and aggregates per-zone stats in a 4x4 strike zone grid. Use `add_pitch`, `calculate_stats`, and `get_stats`.
+- `Pitcher` (in `barchart.py`): stores aggregated pitcher-level pitch metrics (average speed, spin, pitch mix).
+- `get_zone_number(x, y, zone_width, zone_height_low, zone_height_high)` (both files): returns a zone index 1..16 for a given (x,y) plate location mapped into a 4x4 grid.
+- `create_strike_zone_plot` and `create_strike_zone_plot_from_pitches` (both files): create Plotly figure dicts suitable for writing out as HTML using `plotly.io.write_html`.
+
+Requirements
+------------
+The scripts rely on the following Python packages:
+
+- pandas
+- numpy
+- plotly
+
+Optional for some plotting or color helpers referenced in `barchart.py`:
+- matplotlib (for color maps if used)
+
+Install into a virtual environment (Windows PowerShell):
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install pandas numpy plotly matplotlib
+```
+
+How to run
+----------
+1. Place your master CSV named `Regular Season Master CSV.csv` in the repository root (same folder as `barchart.py`). The sample `barchart.py` expects that filename in `main()`.
+2. Edit the `Battername` variable near the top of `main()` in `barchart.py` to analyze a specific batter (example: `"Entrekin, Jake"`).
+3. From PowerShell, run:
+
+```powershell
+python barchart.py
+```
+
+This will: load the CSV, build a `Batter`, calculate stats, generate a strike zone figure and a bar chart, and save two HTML files (`strikezone.html` and `barchart.html`) by default.
+
+Notes, caveats, and suggestions
+-------------------------------
+- The attached `barchart.py` file (from this workspace) uses several modules and names (for example `pd`, `np`, `go`, `pio`, `plt`, `json`, `os`, `traceback`) — ensure those modules are imported at the top of the file if you run into NameError exceptions.
+- The script expects specific CSV column names (e.g., `Batter`, `Pitcher`, `TaggedPitchType`, `AutoPitchType`, `PitchCall`, `RelSpeed`, `SpinRate`, `InducedVertBreak`, `Angle`, `ExitSpeed`, `TaggedHitType`, `PlayResult`, `KorBB`, `PlateLocHeight`, `PlateLocSide`). If your CSV uses different headers, either rename the columns or adapt the filter and construction logic.
+- The `wOBA` calculation in `Batter.calculate_stats()` is currently a placeholder and uses fixed weights; consider replacing with league-specific weights and a proper plate-appearance denominator when you produce final metrics.
+- Several small `print()` debugging lines are present; you may want to remove or replace them with proper logging for production use.
+- The strike-zone grid uses an assumed catcher/umpire-coordinate system where `PlateLocSide` is horizontal (feet from center) and `PlateLocHeight` is feet from ground. Verify units match your CSV. The zone width is 17 inches converted to feet (17 * 0.0833).
+
+What I changed
+--------------
+- This README was authored to summarize the repository, the two primary scripts, how to run them, and important caveats.
+
+Next steps (ideas)
+------------------
+- Add a `requirements.txt` or `pyproject.toml` for reproducible installs.
+- Add a small sample `Regular Season Master CSV.csv` with a few rows so others can run the scripts without a full dataset.
+- Refactor `barchart.py` into smaller modules and add unit tests for `get_zone_number` and the zone aggregation logic.
+
+Contact
+-------
+If you want, I can also:
+
+- Add a `requirements.txt` and/or a sample CSV.
+- Fix the missing imports and small bugs in `barchart.py` so the script runs end-to-end on a fresh environment.
+
+---
+Generated by an automated assistant based on `barchart.py` and `strikezone.py` in this repository.
